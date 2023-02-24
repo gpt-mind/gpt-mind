@@ -6,6 +6,7 @@ import { setUserKey, userKey } from './llm';
 
 // create a new mind and assign it to the window
 let mind = (window as any).mind = new Mind({}, (thought) => (window as any).microChat.addChatMessage(thought.agent || 'Agent', thought.text) );
+let daydreamTimeout: any;
 
 // emotional agents
 let agents = ['Anger', 'Fear', 'Joy', 'Sadness', 'Disgust'].map((emotion) => new Agent(mind, {
@@ -41,6 +42,7 @@ agents.forEach((agent) => (window as any).mind.addAgent(agent));
             let a = await (window as any).mind.generateResponse(message);
             if(Array.isArray(a)) a.map((r:any) => JSON.parse(r)).forEach((r:any) => chat.respond(r.text, r.agent || 'Agent'));
             else chat.respond(a.text, a.agent || 'Agent');
+            if(daydreamTimeout) clearTimeout(daydreamTimeout);
 
             // get the all the agent intensity values
             const intensities = await (window as any).mind.getStateValues('intensity');
@@ -56,7 +58,8 @@ agents.forEach((agent) => (window as any).mind.addAgent(agent));
                 chat.addToPanel('internal', `${intensity.agent} intensity: ${intensity.intensity}`)
                 chat.emotionBar.updateEmotion(intensity.agent.toLowerCase(), intensity.intensity);
             });
-            setTimeout(() => daydream(), 30000);
+            const timeout = Math.random() * 10000 + 10000;
+            setTimeout(() => daydream(), timeout);
         }
     }, {
         showSendButton: true,
@@ -80,7 +83,6 @@ agents.forEach((agent) => (window as any).mind.addAgent(agent));
     : 'Enter your OpenAI API key in the chat input at the bottom of this page to get started.'
 )
 
-let daydreamTimeout: any;
 function daydream() {
     const _chatTranscript: any = (window as any).microChat.getTranscript(0);
     (window as any).mind.daydream(_chatTranscript).then((r: any) => {
