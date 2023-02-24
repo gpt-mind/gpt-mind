@@ -1,23 +1,26 @@
 import { Agent } from './Agent';
 import MicroChat from './MicroChat';
 import { Mind, getTextValue } from './Mind';
+import { preambles } from './PreambleBuilder';
 import { setUserKey, userKey } from './llm';
 
 // create a new mind and assign it to the window
-(window as any).mind = new Mind({}, (thought) => (window as any).microChat.addChatMessage(thought.agent || 'Agent', thought.text) );
+let mind = (window as any).mind = new Mind({}, (thought) => (window as any).microChat.addChatMessage(thought.agent || 'Agent', thought.text) );
 
 // emotional agents
-let agents = ['Anger', 'Fear', 'Joy', 'Sadness', 'Disgust'].map((emotion) => new Agent({ emotion }));
-agents.forEach((agent) => (window as any).mind.addAgent(agent));
-
-// cognitive agents
-agents = ['detail-oriented', 'holistic', 'analytical'].map((style) => new Agent({
-    style,
-    preamble: `Apply your ${style} cognition with an intensity level of {intensity} out of 10 to answer the following question.  Given the following chat history:\n{chathistory}\nAnswer the following question:\n{query}\nand provide a new cognition intensity between 1 and 10 based on the contents of the chat and your response. Answer on A SINGLE LINE ONLY using a JSON object with the following format: { "agent": "${style}", "intensity": 8, "text": "Answer" }\n{ "agent": "${style}", "intensity": `,
+let agents = ['Anger', 'Fear', 'Joy', 'Sadness', 'Disgust'].map((emotion) => new Agent(mind, {
+    emotion,
+    preamble:  preambles.agent, 
 }));
 agents.forEach((agent) => (window as any).mind.addAgent(agent));
 
-// set the intensity to 3
+// cognitive agents
+agents = ['detail-oriented', 'holistic', 'analytical'].map((style: string) => new Agent(mind, {
+    style,
+    preamble:  preambles.agent,
+}));
+agents.forEach((agent) => (window as any).mind.addAgent(agent));
+
 (window as any).mind.setStateValue('intensity', 3);
 
 // create a new chat component and assign it to the window
@@ -72,9 +75,10 @@ agents.forEach((agent) => (window as any).mind.addAgent(agent));
         }
     }
 );
-(window as any).microChat.setNotification('Enter your OpenAI API key in the chat input at the bottom of this page to get started.')
-
-
+(window as any).microChat.setNotification(userKey 
+    ? 'Great! You\'re all set to start chatting with the AI.' 
+    : 'Enter your OpenAI API key in the chat input at the bottom of this page to get started.'
+)
 
 let daydreamTimeout: any;
 function daydream() {

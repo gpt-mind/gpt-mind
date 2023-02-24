@@ -1,4 +1,5 @@
 import OpenAI from 'openai-api';
+import * as config from '../config';
 
 export const completionSettings: any = (inSettings: any) => {
     const def = {
@@ -13,7 +14,9 @@ export const completionSettings: any = (inSettings: any) => {
     return { ...def, ...inSettings }
 }
 
-export let userKey: string = '';
+// if config.openai.key is set and starts with sk- then use it
+
+export let userKey: string = config.config.openai.key || '';
 export function setUserKey(key: string) {
     userKey = key;
 }

@@ -53,7 +53,7 @@ export class EmotionBar {
         `;
     }
     createEmotionDiv(emotion: any, value: any) {
-        return `<style>${this.style()}</style><div class="emotion-bar-cell" style="background-color: ${this.emotionColor(emotion)};">
+        return `<style>${this.style()}</style><div class="emotion-bar-cell" style="background-color: ${this.emotionColor(value)};">
             <div class="emotion-bar-cell-name">${emotion}</div>
             <div class="emotion-bar-cell-value">${value}</div>
         </div>`
@@ -71,17 +71,17 @@ export class EmotionBar {
     }
     emotionColor(d:any) {
         d = parseInt(d)
-        return d > 10 ? '#800026' :
-               d > 9  ? '#BD0026' :
-               d > 8  ? '#E31A1C' :
-               d > 7  ? '#FC4E2A' :
-               d > 6   ? '#FD8D3C' :
-               d > 5   ? '#FEB24C' :
-               d > 4   ? '#FED976' :
-               d > 3   ? '#FFEDA0' :
-               d > 2   ? '#FFFFCC' :
-               d > 1   ? '#FFFFCC' :
-                          '#FFFFCC';
+        return  ( d > 10 ? '#800026' :
+                d > 9 ? '#BD0026' :
+                d > 8 ? '#E31A1C' :
+                d > 7 ? '#FC4E2A' :
+                d > 6 ? '#FD8D3C' :
+                d > 5 ? '#FEB24C' :
+                d > 4 ? '#FED976' :
+                d > 3 ? '#FFEDA0' :
+                d > 2 ? '#FFFFCC' :
+                d > 1 ? '#FFFFCC' :
+                        '#FFFFCC' );
     }
     
 }

@@ -1,16 +1,36 @@
 import { complete, completionSettings } from "./llm";
+import { Mind } from "./Mind";
+import PreambleBuilder, { preambles } from "./PreambleBuilder"
+
+function getTranscript() {
+    return (window as any).microChat.getTranscript(0) || [];
+}
 
 export class Agent {
-    constructor(public stateMap: any = {}) {
+    constructor(public mind: Mind, public stateMap: any = {}) {
         this.stateMap = stateMap;
-        const emotion = stateMap.emotion;
-        if(!stateMap.preamble) this.stateMap.preamble = `You are feeling ${emotion} with an intensity level of {intensity} out of 10. Given the following chat history:\n{chathistory}\nAnswer the following question:\n{query}\n, then provide a new emotional intensity between 1 and 10. Answer on A SINGLE LINE ONLY using a JSON object with the following format: { "agent": "${emotion}", "intensity": <new intensity>, "text": "<text response to question>" }\n{ "agent": "${emotion}", "intensity": `
+        this.stateMap.preamble = preambles.agent;
     }
-    _replace(str: string, map: any) {
-        Object.keys(map).forEach((key) => str = str.replace(`{${key}}`, map[key]));
-        return str;
+    getStateKeys() {
+        return Object.keys(this.stateMap);
     }
-    setStateValue(stateName: string, stateValue: string) { this.stateMap[stateName] = stateValue; }
-    _buildQuery(query: string) { return this._replace(this.stateMap['preamble'], { ...this.stateMap, query }); }
-    async respond(question: string) { return complete(this._buildQuery(question), completionSettings); }
+    setStateValue(stateName: string, stateValue: string) {
+        this.stateMap[stateName] = stateValue; 
+    }
+    clearStateValue(state: string) {
+        delete this.stateMap[state]
+    }
+    _buildQuery(query: string, extra: any = {}) {
+        const replacements = {
+            ...this.stateMap,
+            chathistory: getTranscript().join('\n') || '',
+            thoughts: this.mind.thoughts.join('\n') || '',
+            query,
+            ...extra,
+        }
+        return PreambleBuilder.replace('agent', replacements)
+    }
+    async respond(question: string, extra: any = {}) { 
+        return complete(this._buildQuery(question, extra), completionSettings); 
+    }
 }

@@ -1,5 +1,6 @@
 import { Agent } from "./Agent";
 import { complete, completionSettings } from "./llm";
+import PreambleBuilder from "./PreambleBuilder"
 
 export class Conversation {
     conversation: any[] = [];
@@ -21,8 +22,12 @@ export class Conversation {
                 return resp;
             }));
             responses = responses.filter((r) => r);
-            const responsList = responses.map((r)=>r.agent+': '+r.text).join('\n')
-            const preamble = `Review your responses to the question '${question}':\n${responsList}\nIs there a concensus? Answer on A SINGLE LINE ONLY using a JSON object with the following format: { "concensus": true }\n{ "concensus": `;
+            const responseList = responses.map((r)=>r.agent+': '+r.text).join('\n')
+            const replacements = {
+                question,
+                responseList,
+            }
+            const preamble = PreambleBuilder.replace('concensus', replacements);
             let concensus: any = (await complete(preamble, completionSettings));
             concensus = JSON.parse(`{ "concensus": ${concensus}`);
             if(concensus.concensus || !seekConcensus) return responses;
