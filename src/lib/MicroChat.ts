@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { EmotionBar } from "./EmotionBar";
 import Quill from 'quill';
 
@@ -25,10 +28,12 @@ export default class MicroChat {
                 <style>${this.css()}</style>
                 <div id="notification" class="chat-notification"></div>
                 <div class="chat-internals">
+                    <pre class="internals-panel" id="agent1"></pre>
+                    <pre class="internals-panel" id="agent2"></pre>
+                    <pre class="internals-panel" id="agent3"></pre>
+                    <pre class="internals-panel" id="agent4"></pre>
                     <pre class="internals-panel" id="thoughts"></pre>
-                    <pre class="internals-panel" id="internal"></pre>
-                    <pre class="internals-panel" id="history"></pre>
-                    <pre class="internals-panel" id="transcript"></pre>
+                    <pre class="internals-panel" id="imagery"></pre>
                 </div>
                 <div id="emotions" class="emotion-bar"></div>
                 <div class="chat-history"></div>
@@ -36,7 +41,7 @@ export default class MicroChat {
                 <div id="toolbar" style="display:none"></div></div>`;
         }
         this.users = users || [];
-        this.callback = callback || (() => { });
+        this.callback = callback || (() => {});
         this.options = Object.assign({}, this.defaultOptions, options);
         this.createQuill();
         if(options.history) {
@@ -56,6 +61,11 @@ export default class MicroChat {
         const el = document.getElementById(panel);
         if(!el) return;
         el.innerHTML += '\n' + message;
+    }
+    setPanel(panel: string, message: string) {
+        const el = document.getElementById(panel);
+        if(!el) return;
+        el.innerHTML =  message;
     }
     clearPanel(panel: string) {
         const el = document.getElementById(panel);
@@ -81,7 +91,7 @@ export default class MicroChat {
     }
     getTranscript(extra: number) {
         const transcript = [];
-        for(var i=0;i< this.history.length - 1 - extra; i++) {
+        for(let i=0;i< this.history.length - 1 - extra; i++) {
             const h = this.history[i];
             const agent = h.user + "; " || '';
             transcript.push(`${agent}${h.message}`);
@@ -102,7 +112,7 @@ export default class MicroChat {
             <div class="chat-message-text">${message}</div>
         </div>`;
     }
-    addInfoMessage(message: any, addToHistory: boolean = true) {
+    addInfoMessage(message: any, addToHistory = true) {
         if (!this.element) return;
         const chatHistory = this.element.querySelector(".chat-history");
         if (!chatHistory) return;
@@ -111,7 +121,7 @@ export default class MicroChat {
         chatHistory.scrollTop = chatHistory.scrollHeight;
         if(addToHistory) this.history = this.history.concat({ message });
     }
-    addChatMessage(user: any, message: any, addToHistory: boolean = true) {
+    addChatMessage(user: any, message: any, addToHistory = true) {
         if (!this.element) return;
         const chatHistory = this.element.querySelector(".chat-history");
         if (!chatHistory) return;
@@ -122,6 +132,16 @@ export default class MicroChat {
         chatHistory.scrollTop = chatHistory.scrollHeight;
         if(addToHistory) this.history = this.history.concat({ user, message });
         this.addToPanel('transcript', `${user}: ${message}`);
+    }
+    addChatImageMessage(user: any, imgBase64: any, addToHistory = true) {
+        if (!this.element) return;
+        const chatHistory = this.element.querySelector(".chat-history");
+        if (!chatHistory) return;
+        const now = new Date();
+        const time = `${now.getHours()}:${now.getMinutes()}`;
+        const html = this.createChatMessage(user, `<img src="${imgBase64}" />`, time);
+        chatHistory.insertAdjacentHTML('beforeend', html);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
     }
     createQuillToolbar() {
         if (!this.element) return;

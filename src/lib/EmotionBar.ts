@@ -61,7 +61,7 @@ export class EmotionBar {
     updateEmotionBar() {
         if (!this.element) return;
         this.element.innerHTML = "";
-        for (let emotion in this.emotions) {
+        for (const emotion in this.emotions) {
             this.element.innerHTML += this.createEmotionDiv(emotion, this.emotions[emotion]);
         }
     }

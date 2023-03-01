@@ -1,5 +1,5 @@
 import OpenAI from 'openai-api';
-import * as config from '../config';
+import * as config from './config';
 
 export const completionSettings: any = (inSettings: any) => {
     const def = {
